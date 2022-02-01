@@ -1,5 +1,9 @@
+import 'package:bank_provider/components/mensagem.dart';
+import 'package:bank_provider/screens/autenticacao/registrar.dart';
 import 'package:bank_provider/screens/dashboard/dashboard.dart';
+import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Login extends StatelessWidget {
   final _cpfController = TextEditingController();
@@ -74,16 +78,21 @@ class Login extends StatelessWidget {
             decoration: const InputDecoration(
               labelText: 'CPF',
             ),
-            maxLength: 11,
+            maxLength: 14,
             keyboardType: TextInputType.number,
             controller: _cpfController,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              CpfInputFormatter(),
+            ],
             validator: (value) {
               if (value!.isEmpty) {
                 return 'Informe o CPF';
               }
-              if (value.length < 11) {
+              if (value.length < 14) {
                 return 'CPF inválido';
               }
+              return null;
             },
           ),
           const SizedBox(
@@ -99,6 +108,7 @@ class Login extends StatelessWidget {
               if (value!.isEmpty) {
                 return 'Informe uma Senha';
               }
+              return null;
             },
           ),
           const SizedBox(
@@ -109,12 +119,20 @@ class Login extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Dashboard(),
-                      ),
-                      (route) => false);
+                  if(_cpfController.text == '123.456.789-01' && _passwordController.text =='abc123'){
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Dashboard(),
+                        ),
+                            (route) => false);
+                  } else {
+                    exibirAlerta(
+                      context: context,
+                      titulo: 'ATENÇÃO',
+                      content : 'CPF ou Senha Incorretos!',
+                    );
+                  }
                 }
               },
               child: const Text('Continuar'),
@@ -141,9 +159,14 @@ class Login extends StatelessWidget {
           OutlinedButton(
             style: OutlinedButton.styleFrom(
               primary: Colors.green[900],
-              side: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+              side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 2),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Registrar())
+              );
+            },
             child: const Text('Registrar'),
           ),
         ],

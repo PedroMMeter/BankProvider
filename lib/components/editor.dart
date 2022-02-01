@@ -7,12 +7,12 @@ class Editor extends StatelessWidget {
   final String dica;
   final IconData? icone;
 
-  Editor({
+   const Editor({Key? key,
     required this.controlador,
     required this.rotulo,
     required this.dica,
     required this.icone,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class Editor extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: TextField(
         controller: controlador,
-        style: TextStyle(fontSize: 24.0),
+        style: const TextStyle(fontSize: 24.0),
         decoration: InputDecoration(
           icon: icone != null ? Icon(icone) : null,
           labelText: rotulo,

@@ -1,3 +1,4 @@
+import 'package:bank_provider/models/cliente.dart';
 import 'package:bank_provider/models/transferencias.dart';
 import 'package:bank_provider/screens/autenticacao/login.dart';
 import 'package:bank_provider/screens/dashboard/dashboard.dart';
@@ -12,12 +13,18 @@ void main() => runApp(MultiProvider(
         ChangeNotifierProvider(
           create: (context) => Saldo(0),
         ),
-        ChangeNotifierProvider(create: (context) => Transferencias())
+        ChangeNotifierProvider(create: (context) => Transferencias(),
+        ),
+        ChangeNotifierProvider(create: (context) => Cliente(),
+        ),
+
       ],
-      child: BytebankApp(),
+      child: const BytebankApp(),
     ));
 
 class BytebankApp extends StatelessWidget {
+  const BytebankApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
