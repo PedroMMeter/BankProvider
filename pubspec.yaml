@@ -31,6 +31,8 @@ dependencies:
     sdk: flutter
   sqflite:
   path:
+  date_time_picker:
+  flux_validator_dart:
 
 
   # The following adds the Cupertino Icons font to your application.

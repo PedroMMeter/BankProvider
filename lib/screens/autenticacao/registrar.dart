@@ -1,16 +1,24 @@
 import 'package:bank_provider/components/form_inputs.dart';
+import 'package:bank_provider/models/cliente.dart';
 import 'package:bank_provider/screens/dashboard/dashboard.dart';
 import 'package:brasil_fields/brasil_fields.dart';
+import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flux_validator_dart/flux_validator_dart.dart';
+import 'package:provider/provider.dart';
 
 class Registrar extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
+  //step 1
+  final _formUserData = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _cpfController = TextEditingController();
   final _celularController = TextEditingController();
   final _nascimentoController = TextEditingController();
+
+  //step 2
+  final _formUserAdress = GlobalKey<FormState>();
   final _cepController = TextEditingController();
   final _estadoController = TextEditingController();
   final _cidadeController = TextEditingController();
@@ -18,17 +26,93 @@ class Registrar extends StatelessWidget {
   final _logradouroController = TextEditingController();
   final _numeroController = TextEditingController();
 
+  //step 3
+  final _formUserAuth = GlobalKey<FormState>();
+  final _senhaController = TextEditingController();
+  final _confirmarSenhaController = TextEditingController();
+
   Registrar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cadastro de Cliente'),
-      ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
+        appBar: AppBar(
+          title: const Text('Cadastro de Cliente'),
+        ),
+        body: Consumer<Cliente>(
+          builder: (context, cliente, child) {
+            return Stepper(
+              currentStep: cliente.stepAtual,
+              onStepContinue: () {
+                final functions = [
+                  _salvarStep1,
+                  _salvarStep2,
+                  _salvarStep3,
+                ];
+                return functions[cliente.stepAtual](context);
+              },
+              onStepCancel: () {
+                cliente.stepAtual =
+                    cliente.stepAtual > 0 ? cliente.stepAtual - 1 : 0;
+              },
+              steps: _construirSteps(context, cliente),
+              controlsBuilder:(context, ControlsDetails controls) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: controls.onStepContinue,
+                        child: const Text('Salvar',),
+                      ),
+                      const Padding(padding: EdgeInsets.only(right: 20)),
+                      ElevatedButton(
+                        onPressed: controls.onStepCancel,
+                        child: const Text('Voltar'),
+                      ),
+                    ],
+                  ),
+                );
+              } ,
+            );
+          },
+        ));
+  }
+
+  void _salvarStep1(context) {
+    if (_formUserData.currentState!.validate()) {
+      Cliente cliente = Provider.of<Cliente>(
+        context,
+        listen: false,
+      );
+      cliente.nome = _nomeController.text;
+      _proximoStep(context);
+    }
+  }
+
+  void _salvarStep2(context) {
+    if (_formUserAdress.currentState!.validate()) {
+      _proximoStep(context);
+    }
+  }
+
+  void _salvarStep3(context) {
+    if (_formUserAuth.currentState!.validate()) {
+      FocusScope.of(context).unfocus();
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const Dashboard()),
+          (route) => false);
+    }
+  }
+
+  List<Step> _construirSteps(context, cliente) {
+    List<Step> step = [
+      Step(
+        title: const Text('Dados Pessoais'),
+        isActive: cliente.stepAtual >= 0,
+        content: Form(
+          key: _formUserData,
           child: Column(
             children: [
               Field(
@@ -45,6 +129,7 @@ class Registrar extends StatelessWidget {
                   if (!value.contains(' ')) {
                     return 'Informe ao menos o sobrenome';
                   }
+                  return null;
                 },
               ),
               Field(
@@ -52,17 +137,7 @@ class Registrar extends StatelessWidget {
                 255,
                 controller: _emailController,
                 type: TextInputType.emailAddress,
-                validation: (value) {
-                  if (value!.isEmpty) {
-                    return 'Insira o seu e-mail';
-                  }
-                  if (value.length < 2) {
-                    return 'E-mail inválido';
-                  }
-                  if (!value.contains('@') || !value.contains('.')) {
-                    return 'Formato de e-mail inválido';
-                  }
-                },
+                validation: (value) => Validator.email(value) ? 'Email inválido': null,
               ),
               Field(
                 'CPF',
@@ -73,16 +148,7 @@ class Registrar extends StatelessWidget {
                   FilteringTextInputFormatter.digitsOnly,
                   CpfInputFormatter()
                 ],
-                validation: (value) {
-                  if (value!.isEmpty) {
-                    return 'Informe o CPF';
-                  }
-
-                  if (value.length != 14) {
-                    return 'CPF inválido';
-                  }
-                  return null;
-                },
+                validation: (value) => Validator.cpf(value) ? "CPF inválido" : null,
               ),
               Field(
                 'Celular',
@@ -93,18 +159,9 @@ class Registrar extends StatelessWidget {
                   FilteringTextInputFormatter.digitsOnly,
                   TelefoneInputFormatter(),
                 ],
-                validation: (value) {
-                  if (value!.isEmpty) {
-                    return 'Informe o número de telefone';
-                  }
-
-                  if (value.length < 14) {
-                    return 'Número de telefone inválido';
-                  }
-                  return null;
-                },
+                validation: (value) => Validator.phone(value)? 'Número telefonico inválido' : null,
               ),
-              Field(
+              /*Field(
                 'Data de Nascimento',
                 10,
                 controller: _nascimentoController,
@@ -120,8 +177,29 @@ class Registrar extends StatelessWidget {
                   if (value.length < 10) {
                     return 'Data inválida';
                   }
+                  return null;
                 },
+              ),*/
+              DateTimePicker(
+                controller: _nascimentoController,
+                type: DateTimePickerType.date,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+                dateLabelText: 'Nascimento',
+                dateMask: 'dd/MM/yyyy',
+                validator: (value) => Validator.date(value) ? 'Insira uma data válida' : null,
               ),
+            ],
+          ),
+        ),
+      ),
+      Step(
+        title: const Text('Endereço'),
+        isActive: cliente.stepAtual >= 1,
+        content: Form(
+          key: _formUserAdress,
+          child: Column(
+            children: [
               Field(
                 'CEP',
                 10,
@@ -131,15 +209,7 @@ class Registrar extends StatelessWidget {
                   FilteringTextInputFormatter.digitsOnly,
                   CepInputFormatter(),
                 ],
-                validation: (value) {
-                  if (value!.isEmpty) {
-                    return 'Informe o CEP';
-                  }
-                  if (value.length < 10) {
-                    return 'CEP inválido';
-                  }
-                  return null;
-                },
+                validation: (value) => Validator.cep(value) ? 'CEP inválido' : null,
               ),
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -170,6 +240,7 @@ class Registrar extends StatelessWidget {
                   if (value!.length < 3) {
                     return 'Informe sua cidade';
                   }
+                  return null;
                 },
               ),
               Field(
@@ -202,32 +273,65 @@ class Registrar extends StatelessWidget {
                   if (value!.isEmpty) {
                     return 'Informe o número';
                   }
-                },
-              ),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 2),
-                ),
-                child: Text(
-                  'Registrar',
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.secondary),
-                ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Dashboard(),
-                        ),
-                        (route) => false);
-                  }
+                  return null;
                 },
               ),
             ],
           ),
         ),
       ),
+      Step(
+        title: const Text('Senha'),
+        isActive: cliente.stepAtual >= 1,
+        content: Form(
+          key: _formUserAuth,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Senha',
+                ),
+                controller: _senhaController,
+                maxLength: 16,
+                obscureText: true,
+                validator: (value) {
+                  if (value!.length < 8) {
+                    return 'Senha muito curta';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Confirmar Senha',
+                ),
+                controller: _confirmarSenhaController,
+                maxLength: 16,
+                obscureText: true,
+                validator: (value) {
+                  if (value != _senhaController.text) {
+                    return 'As senhas estão diferentes';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+    return step;
+  }
+
+  _proximoStep(context) {
+    Cliente cliente = Provider.of<Cliente>(
+      context,
+      listen: false,
     );
+    irPara(cliente.stepAtual + 1, cliente);
+  }
+
+  irPara(int step, cliente) {
+    cliente.stepAtual = step;
   }
 }

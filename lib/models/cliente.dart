@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
 class Cliente extends ChangeNotifier{
-  late String _nome;
-  late String _email;
-  late String _celular;
-  late String _cpf;
-  late String _nascimento;
-  late String _cep;
-  late String _estado;
-  late String _cidade;
-  late String _bairro;
-  late String _logradouro;
-  late String _numero;
-  late String _senha;
+  String _nome = '';
+  String _email = '';
+  String _celular = '';
+  String _cpf = '';
+  String _nascimento = '';
+  String _cep = '';
+  String _estado = '';
+  String _cidade = '';
+  String _bairro = '';
+  String _logradouro = '';
+  String _numero = '';
+  String _senha = '';
 
 
   String get nome => _nome;
@@ -85,5 +85,14 @@ class Cliente extends ChangeNotifier{
   String get senha => _senha;
   set senha(String value) {
     _senha = value;
+  }
+
+  int _stepAtual = 0;
+
+  int get stepAtual => _stepAtual;
+
+  set stepAtual(int value) {
+    _stepAtual = value;
+    notifyListeners();
   }
 }

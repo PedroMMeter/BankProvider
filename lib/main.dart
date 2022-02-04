@@ -1,8 +1,6 @@
 import 'package:bank_provider/models/cliente.dart';
 import 'package:bank_provider/models/transferencias.dart';
 import 'package:bank_provider/screens/autenticacao/login.dart';
-import 'package:bank_provider/screens/dashboard/dashboard.dart';
-import 'package:bank_provider/screens/transferencia/lista.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
